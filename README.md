@@ -27,7 +27,10 @@ An IoT-based rescue system designed to assist in borewell emergencies by monitor
    - `1` → Grip
    - `2` → Release
    - `3` → Stop
-
+     
+##  Demo Video
+   https://www.youtube.com/watch?v=ZS7ubXPcYcU
+   
 ##  Future Improvements
 - GUI dashboard
 - Live video streaming
