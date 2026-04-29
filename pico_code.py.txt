@@ -1,0 +1,90 @@
+from machine import Pin, ADC, UART
+import utime
+import sys
+import select
+
+# sensors
+temp_adc = ADC(4)      # internal temp (can replace with LM35 pin)
+gas_adc = ADC(0)       # MQ-5
+
+# motor driver pins
+motor_in1 = Pin(2, Pin.OUT)
+motor_in2 = Pin(3, Pin.OUT)
+
+# GPS setup
+gps_uart = UART(1, baudrate=9600, tx=Pin(4), rx=Pin(5))
+
+
+# ---- helper functions ----
+
+def get_temp():
+    val = temp_adc.read_u16()
+    voltage = val * (3.3 / 65535)
+    temp = 27 - (voltage - 0.706) / 0.001721
+    return round(temp, 2)
+
+
+def get_gas():
+    return gas_adc.read_u16() // 100
+
+
+def get_location():
+    if gps_uart.any():
+        raw = gps_uart.readline()
+        if raw and b'GPGGA' in raw:
+            try:
+                data = raw.decode().split(',')
+                return data[2], data[4]
+            except:
+                pass
+    return "0", "0"
+
+
+# motor actions
+def grip():
+    motor_in1.value(1)
+    motor_in2.value(0)
+
+
+def release():
+    motor_in1.value(0)
+    motor_in2.value(1)
+
+
+def stop_motor():
+    motor_in1.value(0)
+    motor_in2.value(0)
+
+
+# read command without blocking loop
+def check_input():
+    if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
+        return sys.stdin.readline().strip()
+    return None
+
+
+# ---- main loop ----
+while True:
+    cmd = check_input()
+
+    if cmd == '1':
+        grip()
+        print("Gripper: ON")
+    elif cmd == '2':
+        release()
+        print("Gripper: REVERSE")
+    elif cmd == '3':
+        stop_motor()
+        print("Motor: STOP")
+
+    # sensor readings
+    t = get_temp()
+    g = get_gas()
+    lat, lon = get_location()
+
+    print("Temp:", t, "C")
+    print("Gas:", g, "ppm")
+    print("Location:", lat, lon)
+    print("--------------------")
+
+    utime.sleep(2)
