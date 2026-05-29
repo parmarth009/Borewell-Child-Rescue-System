@@ -18,7 +18,6 @@ An IoT-based rescue system designed to assist in borewell emergencies by monitor
 - Sensors: MQ-5, LM35, GPS NEO-6M
 - Motor Driver: L298N
 
-
 ##  How to Run
 1. Upload `pico_code.py` to Raspberry Pi Pico
 2. Connect Pico via USB
